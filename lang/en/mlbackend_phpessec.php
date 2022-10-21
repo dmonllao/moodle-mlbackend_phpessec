@@ -29,7 +29,7 @@ $string['errorlowscore'] = 'The evaluated model prediction accuracy is not very 
 $string['errornotenoughdata'] = 'There is not enough data to evaluate this model using the provided analysis interval.';
 $string['errornotenoughdatadev'] = 'The evaluation results varied too much. It is recommended that more data is gathered to ensure the model is valid. Evaluation results standard deviation = {$a->deviation}, maximum recommended standard deviation = {$a->accepteddeviation}';
 $string['errorphp7required'] = 'The PHP machine learning backend requires PHP 7';
-$string['pluginname'] = 'PHP machine learning backend';
+$string['pluginname'] = 'PHP ESSEC ML backend';
 $string['precision'] = 'Precision {$a}';
 $string['precisions'] = 'Precisions for all the evaluated models {$a}';
 $string['privacy:metadata'] = 'The PHP machine learning backend plugin does not store any personal data.';
