@@ -17,13 +17,13 @@
 /**
  * Version details.
  *
- * @package    mlbackend_php
+ * @package    mlbackend_phpessec
  * @copyright  2017 David Monllao {@link http://www.davidmonllao.com/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020061500; // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2022102100; // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2020060900; // Requires this Moodle version.
-$plugin->component = 'mlbackend_php'; // Full name of the plugin (used for diagnostics).
+$plugin->component = 'mlbackend_phpessec'; // Full name of the plugin (used for diagnostics).

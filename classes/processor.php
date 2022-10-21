@@ -17,12 +17,12 @@
 /**
  * Php predictions processor
  *
- * @package   mlbackend_php
+ * @package   mlbackend_phpessec
  * @copyright 2016 David Monllao {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mlbackend_php;
+namespace mlbackend_phpessec;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -36,7 +36,7 @@ use Phpml\Metric\ClassificationReport;
 /**
  * PHP predictions processor.
  *
- * @package   mlbackend_php
+ * @package   mlbackend_phpessec
  * @copyright 2016 David Monllao {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -69,7 +69,7 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
      */
     public function is_ready() {
         if (version_compare(phpversion(), '7.0.0') < 0) {
-            return get_string('errorphp7required', 'mlbackend_php');
+            return get_string('errorphp7required', 'mlbackend_phpessec');
         }
         return true;
     }
@@ -232,7 +232,7 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
      * that we already consumed and the memory that Phpml algorithms will need we should still have at
      * least 500MB of memory, which should be enough to evaluate a model. In any case this is a robust
      * solution that will work for all sites but it should minimize memory limit problems. Site admins
-     * can still set $CFG->mlbackend_php_no_evaluation_limits to true to skip this 500MB limit.
+     * can still set $CFG->mlbackend_phpessec_no_evaluation_limits to true to skip this 500MB limit.
      *
      * @param string $uniqueid
      * @param float $maxdeviation
@@ -258,7 +258,7 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
         // Skip headers.
         fgets($fh);
 
-        if (empty($CFG->mlbackend_php_no_evaluation_limits)) {
+        if (empty($CFG->mlbackend_phpessec_no_evaluation_limits)) {
             $samplessize = 0;
             $limit = get_real_size('500MB');
 
@@ -276,7 +276,7 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
             $samples[] = array_slice($sampledata, 0, $metadata['nfeatures']);
             $targets[] = intval($data[$metadata['nfeatures']]);
 
-            if (empty($CFG->mlbackend_php_no_evaluation_limits)) {
+            if (empty($CFG->mlbackend_phpessec_no_evaluation_limits)) {
                 // We allow admins to disable evaluation memory usage limits by modifying config.php.
 
                 // We will have plenty of missing values in the dataset so it should be a conservative approximation.
@@ -306,11 +306,17 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
             $resultobj = new \stdClass();
             $resultobj->status = \core_analytics\model::NOT_ENOUGH_DATA;
             $resultobj->score = 0;
-            $resultobj->info = array(get_string('errornotenoughdata', 'mlbackend_php'));
+            $resultobj->info = array(get_string('errornotenoughdata', 'mlbackend_phpessec'));
             return $resultobj;
         }
 
         $scores = array();
+        $precisions = array();
+        $recalls = array();
+        $truepositives = array();
+        $falsepositives = array();
+        $falsenegatives = array();
+        $supports = array();
 
         // Evaluate the model multiple times to confirm the results are not significantly random due to a short amount of data.
         for ($i = 0; $i < $niterations; $i++) {
@@ -332,10 +338,19 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
             }
             $averages = $report->getAverage();
             $scores[] = $averages['f1score'];
+            $precisions[] = $averages['precision'];
+            $recalls[] = $averages['recall'];
+            $truepositives[] = $report->getTruePositive();
+            $falsepositives[] = $report->getFalsePositive();
+            $falsenegatives[] = $report->getFalseNegative();
+            $supports[] = $report->getSupport();
         }
 
         // Let's fill the results changing the returned status code depending on the phi-related calculated metrics.
-        return $this->get_evaluation_result_object($dataset, $scores, $maxdeviation);
+        $resultobj = $this->get_evaluation_result_object($dataset, $scores, $maxdeviation);
+        $extrainfo = $this->get_avg_accuracy_metrics($precisions, $recalls, $truepositives, $falsepositives, $falsenegatives, $supports);
+        $resultobj->info = array_merge($resultobj->info, $extrainfo);
+        return $resultobj;
     }
 
     /**
@@ -376,7 +391,7 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
             $a = new \stdClass();
             $a->deviation = $modeldev;
             $a->accepteddeviation = $maxdeviation;
-            $resultobj->info[] = get_string('errornotenoughdatadev', 'mlbackend_php', $a);
+            $resultobj->info[] = get_string('errornotenoughdatadev', 'mlbackend_phpessec', $a);
         }
 
         if ($resultobj->score < \core_analytics\model::MIN_SCORE) {
@@ -384,11 +399,11 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
             $a = new \stdClass();
             $a->score = $resultobj->score;
             $a->minscore = \core_analytics\model::MIN_SCORE;
-            $resultobj->info[] = get_string('errorlowscore', 'mlbackend_php', $a);
+            $resultobj->info[] = get_string('errorlowscore', 'mlbackend_phpessec', $a);
         }
 
         if ($this->limitedsize === true) {
-            $resultobj->info[] = get_string('datasetsizelimited', 'mlbackend_php', display_size($dataset->get_filesize()));
+            $resultobj->info[] = get_string('datasetsizelimited', 'mlbackend_phpessec', display_size($dataset->get_filesize()));
         }
 
         return $resultobj;
@@ -405,7 +420,7 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
         $modelfilepath = $this->get_model_filepath($outputdir);
 
         if (!file_exists($modelfilepath)) {
-            throw new \moodle_exception('errorcantloadmodel', 'mlbackend_php', '', $modelfilepath);
+            throw new \moodle_exception('errorcantloadmodel', 'mlbackend_phpessec', '', $modelfilepath);
         }
 
         $modelmanager = new ModelManager();
@@ -547,5 +562,60 @@ class processor implements \core_analytics\classifier, \core_analytics\regressor
     protected function instantiate_algorithm(): \Phpml\Classification\Linear\LogisticRegression {
         return new LogisticRegression(self::TRAIN_ITERATIONS, true,
             LogisticRegression::CONJUGATE_GRAD_TRAINING, 'log');
+    }
+
+    /**
+     * Returns an average score and an average precision
+     *
+     * @param array $precisions
+     * @param array $recalls
+     * @param array $truepositives
+     * @param array $falsepositives
+     * @param array $falsenegatives
+     * @param array $supports
+     * @return array
+     */
+    protected function get_avg_accuracy_metrics(array $precisions, array $recalls, array $truepositives, array $falsepositives,
+        array $falsenegatives, array $supports): array {
+
+        if (count($precisions) === 1) {
+            $avgprecision = reset($precisions);
+        } else {
+            $avgprecision = \Phpml\Math\Statistic\Mean::arithmetic($precisions);
+        }
+
+        if (count($recalls) === 1) {
+            $avgrecall = reset($recalls);
+        } else {
+            $avgrecall = \Phpml\Math\Statistic\Mean::arithmetic($recalls);
+        }
+
+        $pr = array(
+            get_string('precision', 'mlbackend_phpessec', $avgprecision),
+            get_string('recall', 'mlbackend_phpessec', $avgrecall),
+            get_string('precisions', 'mlbackend_phpessec', json_encode($precisions)),
+            get_string('recalls', 'mlbackend_phpessec', json_encode($recalls))
+        );
+
+        $confusion = [];
+        $i = 1;
+        foreach ($truepositives as $index => $truepositive) {
+            $confusion_values = [
+                'truepositives' => $truepositives[$index],
+                'falsepositives' => $falsepositives[$index],
+                'falsenegatives' => $falsenegatives[$index],
+                'truenegatives' => $supports[$index],
+            ];
+            $confusion[] = get_string('confusionmatrix',
+                'mlbackend_phpessec',
+                [
+                    'i' => $i,
+                    'matrix' => json_encode($confusion_values)
+                ]
+            );
+            $i++;
+        }
+
+        return array_merge($pr, $confusion);
     }
 }

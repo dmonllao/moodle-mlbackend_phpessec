@@ -86,6 +86,21 @@ class ClassificationReport
         return $this->support;
     }
 
+    public function getFalsePositive(): int
+    {
+        return $this->falsePositive;
+    }
+
+    public function getFalseNegative(): int
+    {
+        return $this->falseNegative;
+    }
+
+    public function getTruePositive(): int
+    {
+        return $this->truePositive;
+    }
+
     public function getAverage(): array
     {
         return $this->average;

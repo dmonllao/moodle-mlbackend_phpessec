@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for mlbackend_php.
+ * Privacy Subsystem implementation for mlbackend_phpessec.
  *
- * @package    mlbackend_php
+ * @package    mlbackend_phpessec
  * @copyright  2018 David Monllao
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mlbackend_php\privacy;
+namespace mlbackend_phpessec\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for mlbackend_php implementing null_provider.
+ * Privacy Subsystem for mlbackend_phpessec implementing null_provider.
  *
  * @copyright  2018 David Monllao
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
