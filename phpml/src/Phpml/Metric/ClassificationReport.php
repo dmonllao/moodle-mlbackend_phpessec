@@ -1,8 +1,7 @@
 <?php
+<?php
 
 declare(strict_types=1);
-
-namespace Phpml\Metric;
 
 use Phpml\Exception\InvalidArgumentException;
 
