@@ -31,7 +31,7 @@ use Phpml\CrossValidation\RandomSplit;
 use Phpml\Dataset\ArrayDataset;
 use Phpml\ModelManager;
 use Phpml\Classification\Linear\LogisticRegression;
-use Phpml\Metric\ClassificationReport;
+use mlbackend_phpessec\ClassificationReport;
 
 /**
  * PHP predictions processor.
